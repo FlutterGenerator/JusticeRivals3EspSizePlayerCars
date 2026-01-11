@@ -1,0 +1,998 @@
+#include <jni.h>
+#include <android/native_activity.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <stdint.h>
+#include <iostream>
+#include <fstream>
+#include <stdio.h>
+#include <sstream>
+#include <vector>
+#include <pthread.h>
+#include <codecvt>
+#include <chrono>
+#include <unordered_map>
+#include <vector>
+#include <queue>
+#include "ImGui/imgui_internal.h"
+#include "ImGui/imgui.h"
+#include "ImGui/backends/imgui_impl_android.h"
+#include "ImGui/backends/imgui_impl_opengl3.h"
+#include <EGL/egl.h>
+#include <GLES3/gl3.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+#include <sys/system_properties.h>
+#include <string>
+#include "ImGui/FONTS/DEFAULT.h"
+#include <Includes/Utils.h>
+#include <Includes/Dobby/dobby.h>
+#include "KittyMemory/MemoryPatch.h"
+int screenWidth;
+int screenHeight;
+bool g_Initialized = false;
+ImGuiWindow* g_window = NULL;
+#include <Substrate/SubstrateHook.h>
+#include <Substrate/CydiaSubstrate.h>
+#include "Unity/Vector3.h"
+const char *libName = "libil2cpp.so"; //Your Game Main Lib or Targeted Lib Here
+
+
+#define pkgName "com.ForgeGames.SpecialForcesGroup2" //Your Game Pkg Here
+#include "And64InlineHook/And64InlineHook.hpp"
+#include "monostring.h" //For Hook like Hook Health,ammo,clip,Thirdperson and other...
+#include "ic_warn_pro.h"
+#include <dlfcn.h>
+#include <android/log.h>
+#include <cmath>
+#include <iostream>
+// Dont Remove CR: @Yahdikallah
+#include "Font.h"
+#include "Arabic.h"
+#include "Includes/msg.h"
+/*#include "font/Roboto_Black.h"
+#include "font/Noto_Medium.h"
+#include "font/font1.h"
+#include "font/Font.h"
+#include "font/fontch.h"
+#include "font/IconsFontAwesome5.h"*/
+#include "Includes/MPCheats.h" //Function Color for Partical Rain Color
+#include <dlfcn.h>
+#include "dark_theme.h"
+#define PATCH_LIB; // for Sfg2 or pubg bypass / @Yahdikallah
+#include <string> //Lang & Matrix
+//тоже важная хрень
+extern "C" {
+    
+    JNIEXPORT void JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_init(JNIEnv* env, jclass cls);
+    JNIEXPORT void JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_resize(JNIEnv* env, jobject obj, jint width, jint height);
+    JNIEXPORT void JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_step(JNIEnv* env, jobject obj);
+    JNIEXPORT void JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_imgui_Shutdown(JNIEnv* env, jobject obj);
+    JNIEXPORT void JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_MotionEventClick(JNIEnv* env, jobject obj,jboolean down,jfloat PosX,jfloat PosY);
+    JNIEXPORT jstring JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_getWindowRect(JNIEnv *env, jobject thiz);
+    JNIEXPORT void JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_real(JNIEnv* env, jobject obj, jint width, jint height);
+    
+};
+//конец
+
+int glWidth;
+int glHeight;
+//bool ENGLISH = true;
+//bool RUSSIAN = false;
+//bool KOREAN = false;
+//float g_LocalController;
+bool bypass = true; //Must be True
+bool ads = true; //Must be True
+
+
+//Language Selection
+enum Language {
+    ENGLISH,
+    RUSSIAN,
+    KOREAN
+};
+struct TextureInfo {
+    ImTextureID textureId;
+    int x;
+    int y;
+    int w;
+    int h;
+   // extern TextureInfo ic_warn_pro;
+//TextureInfo ic_warn_pro;
+};
+
+struct Yahdikallah {
+	
+    
+    MemoryPatch h,
+	FreezeAmmo,
+	BenzineFull,
+	GetMoney,
+	NoEffectGrenade,
+	NoAnimationFree,
+	NoAnimationFree2,
+	NoRecoil,
+	SpeedReoladWeapon,
+	SpeedReoladWeapon2,
+	UnilockAll,
+    GetAmmo,
+	GetRefileAmmo,
+	GetArmor,
+	UnilockAllWeapon,
+	ChostHack,
+	FreezeBot,
+	WallHack,
+	WallHack2,
+	GetCS4,
+MenuMadeBYMe;} hexPatches;
+
+
+bool FreezeAmmo,BenzineFull,GetMoney,NoEffectGrenade,NoAnimationFree,NoRecoil,SpeedReoladWeapon,UnilockAll,GetAmmo = false;
+bool GetRefileAmmo,GetArmor,UnilockAllWeapon,ChostHack,FreezeBot,WallHack,GetCS4;
+
+struct FVector{
+    float x,y,z;
+};
+static bool ColorCars;
+static bool ActiveColors;
+//FVector CarColors = {0,0,0};
+ImVec4 CarColors = ImVec4(255.0f, 255.0f, 255.0f, 255.00f);
+void (*_SetColor)(void* thiz,void* F1, void* F2, float f, float f2, float f3, bool b);
+void SetColor(void* thiz,void* F1, void* F2, float r, float g, float b, bool bl){
+    if(thiz!=nullptr){
+        if(ActiveColors || ColorCars){     
+            _SetColor(thiz,F1,F2,CarColors.x,CarColors.y,CarColors.z,bl);
+        }else {
+            _SetColor(thiz,F1,F2,r,g,b,bl); 
+        }
+    }
+
+}
+
+
+class Color {
+public:
+    float r, b, g, a;
+
+    Color() {
+        SetColor( 0 , 0 , 0 , 225 );
+    }
+
+    Color( float r , float g , float b ) {
+        SetColor( r , g , b , 225 );
+    }
+
+    Color( float r, float g, float b, float a) {
+        SetColor( r , g , b , a );
+    }
+
+    void SetColor( float r1 , float g1 , float b1 , float a1 = 255 ) {
+        r = r1;
+        g = g1;
+        b = b1;
+        a = a1;
+    }
+
+	static Color White(float a = 225){ return Color(255 , 255 , 255, a); }
+    static Color Black(float a = 225){ return Color(0, 0, 0, a); }
+    static Color Red(float a = 225){ return Color(255 , 0 , 0, a); }
+    static Color Green(float a = 225){ return Color(0 , 255 , 0, a); }
+    static Color Blue(float a = 225){ return Color(0 , 0 , 255, a); }
+    static Color Yellow(float a = 225){ return Color(255 , 255 , 0, a); }
+    static Color Cyan(float a = 225){ return Color(0 , 255 , 255, a); }
+    static Color Magenta(float a = 225){ return Color(255 , 0 , 255, a); }
+    static Color Gold(float a = 225){ return Color(255, 65, 0, a);}
+    };
+
+void (*SetColorr)(void* instance, float r, float g, float b, float a); // public void SetColor(float r, float g, float b, float a) { }
+
+void SetColorType(void* instance, Color color) {
+    SetColorr(instance, color.r, color.g, color.b, color.a);
+}
+
+
+float setFuel = 9999.0f; 
+Color ColorType = Color(255, 255, 0, 0);
+bool IsRainbowCarsColor,IsGetFuel = false;
+void (*sFuel)(void *instance, float num);
+void (*isRainbowCar)(void *instance, int value);
+
+bool EnebleColor = false;
+void (*_Update)(void* instance);
+void Update(void* instance) {
+    if (instance != nullptr) {
+        if (EnebleColor || ColorType.a > 0) {
+            SetColorType(instance, ColorType);
+		}
+			if (IsRainbowCarsColor) {
+            isRainbowCar(instance, 5);
+        }
+	if (IsGetFuel) {
+    sFuel(instance, setFuel);
+
+}		
+
+    }
+    _Update(instance);
+}
+
+
+
+bool IsAddHealth,IsAddArmor,IsAutoDead = false;
+float healthAmount = 100.0f; // Valor por defecto
+float setArmor = 100.0f; 
+void (*AddHealth)(void *instance, float num);
+void (*AddArmor)(void *instance, float num);
+void (*DeadPlayer)(void *instance, float num);
+void (*old_FixUpdate)(void *instance);
+
+void FixUpdate(void *instance) {
+	if (instance != NULL && IsAddHealth) {
+    AddHealth(instance, healthAmount);
+
+}
+if (instance != NULL && IsAddArmor) {
+    AddArmor(instance, setArmor);
+
+}
+
+if (instance != NULL && IsAutoDead) {
+    DeadPlayer(instance, 1);
+
+}
+
+return old_FixUpdate(instance);
+}
+
+
+bool IsGetClips,IsGrenadeGun,IsGetDamage,IsFireRate = false;
+void (*old_GetClip)(void *instance);
+ void SetClip(void *instance) {
+  if (instance != NULL) {
+   if (IsGetClips) {
+    *(float *)((uint64_t)instance + 0x68) = 999999;
+     }
+	 if (IsGetDamage) {
+    *(float *)((uint64_t)instance + 0x44) = 999999.0f;
+     }
+	 if (IsFireRate) {
+    *(float *)((uint64_t)instance + 0x3C) = 999999.0f;
+     }
+      }
+       return old_GetClip(instance);
+}
+
+bool IsAutoThrowGrenade = false;
+void (*old_ThrowGrenade)(void *instance);
+ void SetGrenade(void *instance) {
+  if (instance != NULL) {
+   if (IsAutoThrowGrenade) {
+    *(float *)((uint64_t)instance + 0x50) = 999.0f;
+     }
+      }
+       return old_ThrowGrenade(instance);
+}
+
+
+
+bool show_window;
+int type = 1;
+float density = -1;
+bool esp = false;
+bool drawEnemyCircle = false;
+bool drawEnemyText = false;
+bool drawEnemyBox = false;
+bool recoil = false;
+bool Yahdikallah = false;
+bool aimbot = false;
+bool firerate = false;
+float lineThickness = 2.0f;
+ImVec4 buttonColor = esp ? ImVec4(0.1f, 0.7f, 0.1f, 1.0f) : ImVec4(0.7f, 0.1f, 0.1f, 1.0f);
+ImVec4 buttonHoverColor = ImVec4(0.2f, 0.8f, 0.2f, 1.0f);
+std::vector<Vector3> espPoints;
+void (*setpitchyaw)(float, float);
+Vector3 (*WorldToScreenPoint)(void *instance, Vector3);
+Vector3 (*get_position)(void *instance);
+void *(*get_main)();
+void *(*get_transform)(void *instance);
+void (*old_Player_update)(void *player);
+void Player_update(void* player) {
+    if (player) {
+    Vector3 pos = get_position(get_transform(player));
+    Vector3 screen = WorldToScreenPoint(get_main(), {pos.x, pos.y, pos.z - 5.0f});
+    
+    if (screen.z >= 1.0f) {
+    screen.y = screenHeight - screen.y;
+    espPoints.push_back(screen);
+    }
+    }
+    old_Player_update(player);
+}
+
+
+void DrawImage(int x, int y, int w, int h, ImTextureID Texture) {
+ImGui::GetForegroundDrawList()->AddImage(Texture, ImVec2(x, y), ImVec2(x + w, y + h));
+}
+
+
+//For Pkg
+#include <string>
+#include <vector>
+#include <fstream>
+#include <iostream>
+const char *GetPackageName(JNIEnv *env, jobject context) {
+}
+// List of known SFG2 package names
+std::vector<std::string> YahdikallahPackages = {
+    "com.ForgeGames.SpecialForcesGroup2",         // Sfg2
+};
+
+// Function to check if a package is installed
+bool isPackageInstalled(const std::string& packageName) {
+    std::string path = "/data/data/" + packageName; // Common Android app data path
+    std::ifstream file(path.c_str());
+    return file.good();
+}
+
+// Function to detect installed SFG2 version
+std::string detectSfg2Version() {
+    for (const auto& pkg : YahdikallahPackages) {
+        if (isPackageInstalled(pkg)) {
+            return pkg; // Return the first detected package
+        }
+    }
+    return "SFG2 Not Installed"; // If no package is found
+}
+void DrawESP(ImDrawList *draw) {
+    // 0x028D184C = Change Camera Type Patch with a hex code [ Glitch ]
+if (bypass) {
+// Add here your bypass
+}
+if (ads) {
+// Remove Ads;
+PATCH_LIB("libUE4.so","0x02640a4c", "0");//SFG2 Remove Ads by @Yahdikallah | Class: _ZN22FOnlineSessionSettings3SetI6TArrayIh17FDefaultAllocatorEEEv5FNameRKT_N28EOnlineDataAdvertisementType4TypeEi
+PATCH_LIB("libUE4.so","0x026411a8", "0");//SFG2 Remove Ads by @Yahdikallah | DONT REMOVE CREDIT
+PATCH_LIB("libUE4.so","0x02640724", "0");//SFG2 Remove Ads by @Yahdikallah 
+PATCH_LIB("libUE4.so","0x02641358", "0");//SFG2 Remove Ads by @Yahdikallah
+PATCH_LIB("libUE4.so","0x026408d4", "0");//SFG2 Remove Ads by @Yahdikallah | DONT REMOVE CREDIT
+PATCH_LIB("libUE4.so","0x0264103c", "0");//SFG2 Remove Ads by @Yahdikallah 
+PATCH_LIB("libUE4.so","0x026405b8", "0");//SFG2 Remove Ads by @Yahdikallah
+PATCH_LIB("libUE4.so","0x02640d74", "0");//SFG2 Remove Ads by @Yahdikallah | DONT REMOVE CREDIT
+PATCH_LIB("libUE4.so","0x026402e0", "0");//SFG2 Remove Ads by @Yahdikallah 
+PATCH_LIB("libUE4.so","0x02640c00", "0");//SFG2 Remove Ads by @Yahdikallah
+PATCH_LIB("libUE4.so","0x02641e28", "0");//SFG2 Remove Ads by @Yahdikallah 
+PATCH_LIB("libUE4.so","0x0290ed50", "0");//SFG2 Remove Ads by @Yahdikallah
+}
+//ic_warn_pro = CreateTexture(ic_warn_pro_data, sizeof(ic_warn_pro_data));
+//DrawImage(glWidth / 2 - 90, 45, 180, 45, ic_warn_pro.textureId); // لا يوجد اعداء
+ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+draw->AddText({((float) density / 11.0f), 100}, ImColor(0, 255, 0, 250),
+ "                                                                                                                                                                             ANTIBAN STATUS : ONLINE!");
+if (!draw) return;
+std::string detectedPackage = detectSfg2Version();
+std::string displayText = "GAME VERSION : " + detectedPackage; // @exe_right
+//draw->AddText(NULL, ((float) density / 18.0f, (float) screenWidth / 120 + screenWidth / 40, 550, Im_Vec4(0.0f, 1.0f, 0.0f, 1.0f), displayText.c_str());
+draw->AddText(NULL, ((float) density / 18.0f),{(float) screenWidth / 120 + screenWidth / 40,550}, IM_COL32(0, 255, 17, 250),displayText.c_str());
+
+}
+
+void mystyle() {
+}
+namespace Settings {static int Tab = 1;}
+void SetCustomImGuiStyle()
+{
+    ImGuiStyle *style = &ImGui::GetStyle();
+    ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = NULL;
+    //InitTexture();
+        style->WindowTitleAlign = ImVec2(0.5, 0.5);
+        style->ButtonTextAlign = ImVec2(0.5,0.5);
+        //اطار الصوره تحديد
+        style->WindowRounding = 8.0f;
+        style->FrameRounding = 7.0f;
+        style->ScrollbarRounding = 9;
+        style->WindowBorderSize = 0.5;//2    
+        style->FrameBorderSize = 2.5;// обводки кнопок
+//اطار الصوره تحديد
+        style->WindowTitleAlign = ImVec2(0.5, 0.5);
+        style->ButtonTextAlign = ImVec2(0.5,0.5);
+        style->Colors[ImGuiCol_Text] = ImColor(255, 255, 255, 255);
+        style->Colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
+        style->Colors[ImGuiCol_WindowBg] = ImColor(0, 0, 0, 210);
+        style->Colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+        style->Colors[ImGuiCol_Border] = ImColor(255, 255, 255, 255);// حدود الخط باللون الأخضر الفاتح
+        style->Colors[ImGuiCol_BorderShadow] = ImColor(0, 255, 0); // ظلال الحدود باللون الأخضر الفاتح
+        style->Colors[ImGuiCol_FrameBg] = ImColor(0, 0, 0, 235);
+        style->Colors[ImGuiCol_FrameBgHovered] = ImColor(0, 0, 0, 235);
+        style->Colors[ImGuiCol_FrameBgActive] = ImColor(0, 0, 0, 235);
+        style->Colors[ImGuiCol_TitleBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.70f);
+        style->Colors[ImGuiCol_TitleBgCollapsed] = ImColor(0, 0, 0, 155);
+        style->Colors[ImGuiCol_TitleBgActive] = ImVec4(0.00f, 0.00f, 0.00f, 0.70f);
+        style->Colors[ImGuiCol_MenuBarBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.70f);
+        style->Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.39f);
+        style->Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.20f, 0.25f, 0.29f, 1.00f);
+        style->Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.18f, 0.22f, 0.25f, 1.00f);
+        style->Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.09f, 0.21f, 0.31f, 1.00f);
+        style->Colors[ImGuiCol_CheckMark] = ImColor(255, 0, 0, 255);
+        style->Colors[ImGuiCol_SliderGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+        style->Colors[ImGuiCol_Separator]             = ImColor(255, 255, 255, 255);
+        style->Colors[ImGuiCol_SeparatorActive]       = ImColor(255, 255, 255, 255);
+        style->Colors[ImGuiCol_SeparatorHovered]      = ImColor(255, 255, 255, 255);
+        style->Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+        style->Colors[ImGuiCol_Button] = ImColor(0, 0, 0);
+        style->Colors[ImGuiCol_ButtonHovered] = ImColor(0, 0, 0);
+        style->Colors[ImGuiCol_ButtonActive] = ImColor(0, 0, 0);
+        style->Colors[ImGuiCol_Header] = ImVec4(0.10f, 0.15f, 0.19f, 0.55f);
+        style->Colors[ImGuiCol_HeaderHovered] = ImVec4(0.16f, 0.19f, 0.15f, 1.00f);
+        style->Colors[ImGuiCol_HeaderActive] = ImVec4(0.00f, 0.00f, 0.00f, 0.70f);
+        style->Colors[ImGuiCol_ResizeGrip] = ImColor(255, 255, 255, 255);
+        style->Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+        style->Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+        style->Colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+        style->Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+        style->Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+        style->Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+        style->Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
+        style->WindowRounding = 0.0f;
+        style->FrameRounding = 6.0f;
+        style->WindowPadding = ImVec2(10, 8);
+        style->FramePadding = ImVec2(4,4);
+
+}
+JNIEXPORT void JNICALL
+Java_com_Yahdikallah_ImGui_GLES3JNIView_init(JNIEnv* env, jclass cls) {
+    //SetUpImGuiContext
+    if(!g_Initialized) {
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    int screenWidth = io.DisplaySize.x;
+    int screenHeight = io.DisplaySize.y;
+    ImGui_ImplOpenGL3_Init("#version 100");
+    ImGui::GetStyle().ScaleAllSizes(2.5f);
+    
+    mystyle();
+    ImGui::StyleColorsClassic();
+    
+    io.Fonts->AddFontFromFileTTF("/system/fonts/SourceSansPro-Bold.ttf", 25);
+static const ImWchar icons_ranges[] = { 0xf000, 0xf3ff, 0x0900, 0x097F, 0,};
+    ImFontConfig font_config;
+    ImFontConfig icons_config;
+    ImFontConfig CustomFont;
+    CustomFont.FontDataOwnedByAtlas = false;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    icons_config.OversampleH = 2.5;
+    icons_config.OversampleV = 2.5;
+	io.Fonts->AddFontFromMemoryTTF(const_cast<std::uint8_t*>(Custom3), sizeof(Custom3), 22.f, &CustomFont, io.Fonts->GetGlyphRangesCyrillic());
+	
+	
+    g_Initialized = true;
+    }
+    return;
+}
+
+JNIEXPORT void JNICALL
+Java_com_Yahdikallah_ImGui_GLES3JNIView_resize(JNIEnv* env, jobject obj, jint width, jint height) {
+    if (g_Initialized) {
+    screenWidth = (int) width;
+    screenHeight = (int) height;
+    ImGuiIO &io = ImGui::GetIO();
+    io.IniFilename = NULL;
+    ImGui::GetIO().DisplaySize = ImVec2((float)width, (float)height);
+    }
+    return;
+}
+
+
+struct CircleEffect {
+    float timer = 1.0f;
+    float alpha = 270.0f;
+    float radius = 5.0f;
+};
+
+std::unordered_map<void*, CircleEffect> circleMap;
+
+void Draw3DCircle(ImDrawList* draw, void* player, void* camera, Vector3 pos, int screenHeight, float deltaTime) {
+    auto& circle = circleMap[player];
+
+    circle.timer += deltaTime;
+
+    float t = circle.timer / 1.2f;
+    if (t > 1.0f) {
+        circle.timer = 0.0f;
+        t = 0.0f;
+    }
+
+    circle.alpha = (1.0f - t) * 255.0f;
+    circle.radius = 0.5f + t * 1.f;
+
+    const int segments = 48;
+    Vector3 base = pos;
+    base.y -= 0.1f;
+
+    for (int s = 0; s < segments; ++s) {
+        float angle1 = (2 * M_PI / segments) * s;
+        float angle2 = (2 * M_PI / segments) * (s + 1);
+
+        Vector3 p1 = {
+            base.x + cosf(angle1) * circle.radius,
+            base.y,
+            base.z + sinf(angle1) * circle.radius
+        };
+        Vector3 p2 = {
+            base.x + cosf(angle2) * circle.radius,
+            base.y,
+            base.z + sinf(angle2) * circle.radius
+        };
+
+        Vector3 sp1 = WorldToScreenPoint(camera, p1);
+        Vector3 sp2 = WorldToScreenPoint(camera, p2);
+
+        if (sp1.z > 0.f && sp2.z > 0.f) {
+            draw->AddLine(
+                {sp1.x, screenHeight - sp1.y},
+                {sp2.x, screenHeight - sp2.y},
+                IM_COL32(255, 255, 255, (int)circle.alpha),
+                1.5f
+            );
+        }
+    }
+}
+
+
+ImVec4 menuThemeColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f); 
+void BeginDraw() {
+//SetCustomImGuiStyle();
+ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+                ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    ImGui::Begin("MENU MADE BY PRASTOY PAREN"); // Your Imgui Title Here
+    g_window = ImGui::GetCurrentWindow();
+	
+ ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+	 
+	 ImGuiStyle *style = &ImGui::GetStyle();
+style->WindowRounding = 0.0f;
+style->FrameRounding = 0.0f;
+style->GrabRounding = 4.5f;
+style->FrameBorderSize = 0.1f;
+style->WindowBorderSize= 0.8f;
+        style->WindowTitleAlign = ImVec2(0.5, 0.5);
+        style->ScrollbarSize= 10.0f;
+    
+    
+        style->Colors[ImGuiCol_Text]                  = ImColor(255, 0, 0, 255);
+
+        style->Colors[ImGuiCol_WindowBg]              = ImColor(0, 0, 0, 255);
+        style->Colors[ImGuiCol_Border]                = ImColor( 255,  255, 255, 190);
+        style->Colors[ImGuiCol_FrameBg]               = ImColor(0, 0, 0, 250);
+        style->Colors[ImGuiCol_FrameBgActive]               = ImColor(0, 0, 0, 250);
+        style->Colors[ImGuiCol_FrameBgHovered]               = ImColor(0, 0, 0, 250);
+        
+        style->Colors[ImGuiCol_PopupBg]               = ImColor(0, 0, 0, 255);
+
+        style->Colors[ImGuiCol_Tab] = ImColor(255, 255, 255, 150);
+        style->Colors[ImGuiCol_TabActive] = ImColor(255, 255, 255, 150);
+        style->Colors[ImGuiCol_TabHovered] = ImColor(0, 0, 0, 250);
+        
+        style->Colors[ImGuiCol_Button]                   = ImColor(0, 255, 0, 255);
+        style->Colors[ImGuiCol_ButtonActive]             = ImColor(255, 0, 0, 255);
+        style->Colors[ImGuiCol_ButtonHovered]            = ImColor(0, 0, 0, 250);
+        
+        style->Colors[ImGuiCol_Header]                = ImColor(255, 0, 0, 255);
+        style->Colors[ImGuiCol_HeaderActive]          = ImColor(255, 255, 255, 150);
+        style->Colors[ImGuiCol_HeaderHovered]         = ImColor(255, 255, 255, 150);
+
+        style->Colors[ImGuiCol_TitleBg]               = ImColor(0, 0, 0, 250);
+        style->Colors[ImGuiCol_TitleBgActive]         = ImColor(0, 0, 0, 250);
+        style->Colors[ImGuiCol_TitleBgCollapsed]      = ImColor(0, 0, 0, 250);
+        style->Colors[ImGuiCol_CheckMark]             = ImColor(0, 255, 0, 255);
+     style->Colors[ImGuiCol_ResizeGrip] = ImColor(255, 255, 255, 255);
+        style->Colors[ImGuiCol_ResizeGripHovered] = ImColor(255, 0, 0, 255);
+        style->Colors[ImGuiCol_ResizeGripActive] = ImColor(255, 0, 0, 255);
+
+
+                
+       // style->ScaleAllSizes(std::max(1.0f, density / 170.0f));
+        style->ScrollbarSize = 30.0f;
+        
+static ImVec2 window_pos = ImVec2(650, 20);//650,20
+static ImVec2 window_size = ImVec2(900, 600);//800,500
+	
+	
+    ImDrawList* pDrawList;
+const auto& pWindowDrawList = ImGui::GetWindowDrawList();
+pDrawList = pWindowDrawList;
+    static const int numParticles = 115;  // ??? ???????
+static ImVec2 particlePositions[numParticles];  
+static ImVec2 particleVelocities[numParticles];
+
+static bool initialized = false;
+if (!initialized)
+{
+    for (int i = 0; i < numParticles; ++i)
+    {
+        particlePositions[i] = ImVec2(
+            ImGui::GetWindowPos().x + ImGui::GetWindowSize().x * static_cast<float>(rand()) / RAND_MAX,
+            ImGui::GetWindowPos().y + ImGui::GetWindowSize().y * static_cast<float>(rand()) / RAND_MAX
+        );
+
+        particleVelocities[i] = ImVec2(0, static_cast<float>((rand() % 100) + 50));
+    }
+
+    initialized = true;
+}
+float deltaTime = ImGui::GetIO().DeltaTime;
+static float colorChange = 0.0f;
+colorChange += deltaTime * 0.5f; // ????? ????? ???? ??????
+
+for (int i = 0; i < numParticles; ++i)
+{
+    particlePositions[i].y += particleVelocities[i].y * deltaTime;
+
+    if (particlePositions[i].y > ImGui::GetWindowPos().y + ImGui::GetWindowSize().y)
+    {
+        particlePositions[i].y = ImGui::GetWindowPos().y;
+        particlePositions[i].x = ImGui::GetWindowPos().x + ImGui::GetWindowSize().x * static_cast<float>(rand()) / RAND_MAX;
+    }
+    ImU32 rainColor = ImColor(
+        static_cast<int>(sin(colorChange) * 127 + 128),  // ?????? ??? 0-255 ???? ?????
+        static_cast<int>(cos(colorChange) * 127 + 128),
+        255,
+        255
+    );
+
+    // ??? ??????? ??? ????
+    pDrawList->AddLine(ImVec2(particlePositions[i].x, particlePositions[i].y),
+                       ImVec2(particlePositions[i].x, particlePositions[i].y + 10), 
+                       rainColor, 2.0f);
+}
+
+// ??? ???? "@Yahdikallah Vip" ?? ??? ???????
+ImVec2 windowPos = ImGui::GetWindowPos();
+ImVec2 windowSize = ImGui::GetWindowSize();
+ImVec2 textPos = ImVec2(windowPos.x + windowSize.x / 2.0f, windowPos.y + windowSize.y / 2.0f);
+// ????? ?????? ??? ???? "KRASH"
+const char* text1 = " ";
+const char* text2 = " ";
+ImVec2 textSize1 = ImGui::CalcTextSize(text1);
+ImVec2 textSize2 = ImGui::CalcTextSize(text2);
+// ???? ???? ???? ???? ?? ???????
+ImVec2 textPos1 = ImVec2(textPos.x - (textSize1.x + textSize2.x) / 2, textPos.y - 20);
+ImVec2 textPos2 = ImVec2(textPos1.x + textSize1.x, textPos1.y);
+// ??? ?????? ??? ??? ????? ???? ????
+for (int i = 10; i > 0; i--)
+{
+    float alpha = (i * 25);  // ????? ???????? ????????
+    pDrawList->AddText(ImGui::GetFont(), 40.0f + i, 
+                       ImVec2(textPos1.x - i, textPos1.y - i), 
+                       IM_COL32(255, 255, 0, alpha), text1);
+}
+ImVec2 winPos = ImGui::GetWindowPos();
+ImVec2 winSize = ImGui::GetWindowSize();
+
+float time = ImGui::GetTime();
+int segments = 250;
+int totalSnakes = 20;
+
+float snakeSpeed = 1.0f;
+float waveAmplitude = 10.0f;
+float waveFreq = 4.0f;
+
+static std::vector<ImVec2> snakeCenters;
+static std::vector<ImVec2> snakeDirs;
+if (snakeCenters.size() != totalSnakes) {
+    snakeCenters.clear();
+    snakeDirs.clear();
+    for (int i = 0; i < totalSnakes; ++i) {
+        float x = winPos.x + rand() % (int)winSize.x;
+        float y = winPos.y + rand() % (int)winSize.y;
+        snakeCenters.push_back(ImVec2(x, y));
+
+        float angle = (rand() % 360) * (IM_PI / 180.0f);
+        snakeDirs.push_back(ImVec2(cosf(angle), sinf(angle)));
+    }
+}
+
+for (int s = 0; s < totalSnakes; ++s)
+{
+    ImVec2& center = snakeCenters[s];
+    ImVec2& dir = snakeDirs[s];
+
+    center.x += dir.x * snakeSpeed;
+    center.y += dir.y * snakeSpeed;
+
+    if (center.x < winPos.x || center.x > winPos.x + winSize.x) dir.x *= -1;
+    if (center.y < winPos.y || center.y > winPos.y + winSize.y) dir.y *= -1;
+
+    float snakeTimeOffset = s * 0.7f;
+
+    ImU8 rBase = 200;
+    ImU8 gBase = 120;
+    ImU8 bBase = 50;
+
+    std::vector<ImVec2> snakePath;
+    for (int i = 0; i < segments; ++i) {
+        float t = (float)i / segments;
+        float baseX = center.x - dir.x * t * 12;
+        float baseY = center.y - dir.y * t * 12;
+
+        float wave = sinf((time + snakeTimeOffset) + t * waveFreq) * waveAmplitude;
+        ImVec2 normal(-dir.y, dir.x);
+        ImVec2 pos = ImVec2(
+            baseX + normal.x * wave,
+            baseY + normal.y * wave
+        );
+        snakePath.push_back(pos);
+    }
+
+    for (int i = 1; i < segments; ++i) {
+        float t = (float)i / segments;
+        float glow = sinf(time * 10.0f - t * 20.0f) * 0.5f + 0.5f;
+
+        ImU32 color = IM_COL32(
+            rBase + glow * 55,
+            gBase + glow * 40,
+            bBase,
+            (int)(130 + 100 * (1.0f - t))
+        );
+
+        float thickness = 5.0f * (1.0f - t) + 1.2f;
+        pDrawList->AddLine(snakePath[i - 1], snakePath[i], color, thickness);
+    }
+
+    // Snake head
+    ImVec2 head = snakePath[0];
+    pDrawList->AddCircleFilled(head, 10.0f, IM_COL32(255, 140, 0, 255));
+    pDrawList->AddCircleFilled(ImVec2(head.x - 2.5f, head.y - 2.5f), 2.0f, IM_COL32(0, 0, 0, 255));
+    pDrawList->AddCircleFilled(ImVec2(head.x + 2.5f, head.y - 2.5f), 2.0f, IM_COL32(0, 0, 0, 255));
+
+    // Flickering fire tongue
+    if (((int)((time + s) * 6)) % 2 == 0) {
+        pDrawList->AddLine(head, ImVec2(head.x, head.y + 14), IM_COL32(255, 80, 0, 255), 1.5f);
+        pDrawList->AddLine(ImVec2(head.x, head.y + 14), ImVec2(head.x - 3, head.y + 18), IM_COL32(255, 50, 0, 255), 1.2f);
+        pDrawList->AddLine(ImVec2(head.x, head.y + 14), ImVec2(head.x + 3, head.y + 18), IM_COL32(255, 50, 0, 255), 1.2f);
+    }
+}
+// ??? ???? ???????
+pDrawList->AddText(ImGui::GetFont(), 40.0f, textPos1, IM_COL32(255, 215, 0, 255), text1); // Yahdikallah▓█▓Pro ???? ????
+pDrawList->AddText(ImGui::GetFont(), 40.0f, textPos2, IM_COL32(255, 255, 255, 255), text2); // VIP ?????? ??????
+
+ImGui::Text("<------------Mod menu Justice Rivals 3 lib/armeabi-v7a Owner::EHROM TJ------------>");
+ImGui::Checkbox("Infiny Magazine", &UnilockAll);     
+ImGui::SameLine();	
+ImGui::Checkbox("Get Money", &GetMoney);
+ImGui::SameLine();	
+ImGui::Checkbox("Op All Weapon", &IsFireRate);
+     
+                 
+ImGui::Checkbox("Unlimited Health", &IsAddHealth);
+ImGui::SameLine();	
+ImGui::Checkbox("Unlimited Armor", &IsAddArmor);
+ImGui::SameLine();	
+ImGui::Checkbox("Auto Dead", &IsAutoDead);
+
+ImGui::Checkbox("Unlimited Clips", &IsGetClips);
+ImGui::SameLine();	
+ImGui::Checkbox("Unlimited Ammo", &GetAmmo);
+ImGui::SameLine();	       
+ImGui::Checkbox("Get Refile Ammo", &GetRefileAmmo);
+      			   
+ImGui::Checkbox("Freeze Ammo", &FreezeAmmo);             
+ImGui::SameLine();		
+ImGui::Checkbox("No Recoil ", &NoRecoil);                
+ImGui::SameLine();		
+ImGui::Checkbox("No Animation Free", &NoAnimationFree);
+  
+
+ImGui::Checkbox("Unlock All Weapon", &UnilockAllWeapon); 
+ImGui::SameLine();		
+ImGui::Checkbox("Speed Weapon Reload", &SpeedReoladWeapon);
+ImGui::SameLine();		
+ImGui::Checkbox("Damage Hack", &IsGetDamage);
+
+ImGui::Checkbox("No Effect Grenade ", &NoEffectGrenade);
+ImGui::SameLine();		
+ImGui::Checkbox("Auto Throw Grenade", &IsAutoThrowGrenade);			
+			
+
+ImGui::Checkbox("Eneble Color Cars", &EnebleColor);
+ImGui::SameLine();	
+ImGui::ColorEdit3("Color Cars", (float *) &ColorType,
+ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoInputs);
+
+ImGui::Checkbox("Rainbow Colors", &IsRainbowCarsColor);
+ImGui::SameLine();					
+ImGui::Checkbox("Full Benzine Cars", &IsGetFuel);
+ImGui::SameLine();					          
+ImGui::Checkbox("Wall Hack", &WallHack);
+
+
+
+if (UnilockAll) {hexPatches.UnilockAll.Modify();} else {hexPatches.UnilockAll.Restore();}
+if (GetMoney) {hexPatches.GetMoney.Modify();} else {hexPatches.GetMoney.Restore();}
+if (GetAmmo) {hexPatches.GetAmmo.Modify();} else {hexPatches.GetAmmo.Restore();}				
+if (GetRefileAmmo) {hexPatches.GetRefileAmmo.Modify();} else {hexPatches.GetRefileAmmo.Restore();}				
+if (FreezeAmmo) {hexPatches.FreezeAmmo.Modify();} else {hexPatches.FreezeAmmo.Restore();}
+if (NoRecoil) {hexPatches.NoRecoil.Modify();} else {hexPatches.NoRecoil.Restore();}							
+if (NoAnimationFree) {hexPatches.NoAnimationFree.Modify();hexPatches.NoAnimationFree2.Modify();} else {hexPatches.NoAnimationFree.Restore();hexPatches.NoAnimationFree2.Restore();}										
+if (UnilockAllWeapon) {	hexPatches.UnilockAllWeapon.Modify();} else {hexPatches.UnilockAllWeapon.Restore();}						
+if (SpeedReoladWeapon) {hexPatches.SpeedReoladWeapon.Modify();hexPatches.SpeedReoladWeapon2.Modify();} else {hexPatches.SpeedReoladWeapon.Restore();hexPatches.SpeedReoladWeapon2.Restore();}							
+if (BenzineFull) {hexPatches.BenzineFull.Modify();} else {hexPatches.BenzineFull.Restore();}
+if (NoEffectGrenade) {hexPatches.NoEffectGrenade.Modify();} else {hexPatches.NoEffectGrenade.Restore();}					
+if (WallHack) {hexPatches.WallHack.Modify();hexPatches.WallHack2.Modify();} else {hexPatches.WallHack.Restore();hexPatches.WallHack2.Restore();}											
+					
+					
+for (const auto& point : espPoints) {
+    if (drawEnemyCircle) {
+        ImGui::GetBackgroundDrawList()->AddCircle(
+            ImVec2(point.x, point.y),
+            20.0f,
+            IM_COL32(255, 0, 0, 255),
+            12
+        );
+    }
+
+    if (drawEnemyText) {
+        ImGui::GetBackgroundDrawList()->AddText(
+            ImVec2(point.x + 25.0f, point.y),
+            IM_COL32(255, 0, 0, 255),
+            "Enemy"
+        );
+    }
+
+    if (drawEnemyBox) {
+        ImVec2 boxMin = ImVec2(point.x - 30.0f, point.y - 30.0f);
+        ImVec2 boxMax = ImVec2(point.x + 30.0f, point.y + 30.0f);
+        ImGui::GetBackgroundDrawList()->AddRect(
+            boxMin,
+            boxMax,
+            IM_COL32(255, 0, 0, 255),
+            0.0f,
+            15,
+            lineThickness
+        );
+    }
+}
+espPoints.clear();
+}
+//Function Anticheat Data Deletion By @Yahdikallah
+void FixGameBan()
+{
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/Engine/Saved/Config/Android/Manifest.ini");
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/Epic Games/KeyValueStore.ini");
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/SpecialForces/Saved/Config/Android/DeviceProfiles.ini");
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/SpecialForces/Saved/Config/Android/Engine.ini");
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/SpecialForces/Saved/Config/Android/Game.ini");
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/SpecialForces/Saved/Config/Android/Hardware.ini");
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/SpecialForces/Saved/Config/Android/Input.ini");
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/SpecialForces/Saved/Config/Android/Scalability.ini");
+system("rm -rf /storage/emulated/0/UE4Game/SpecialForces/SpecialForces/Saved/Config/CrashReportClient/UE4CC-Android-0004832308DDA409E61FEEB8210F75A0/CrashReportClient.ini");
+}
+
+void *hack_thread(void *) {
+     sleep(5);
+//Disable Untrusted Activity (Cheat Function) SFG2 By @Yahdikallah
+system("adb shell am compat disable BLOCK_UNTRUSTED_TOUCHES com.ForgeGames.SpecialForcesGroup2"); //Sfg2 Disable : Block Untrusted Activity (Cheat) = Automatic Bypass
+FixGameBan();
+ProcMap il2cppMap;
+    do {
+     sleep(1);
+    } while (!isLibraryLoaded(libName));
+    //Sfg2 Bypass :
+
+    //void *address = dlsym_ex(input, OBFUSCATE("_ZN13IPlatformFile14BypassSecurityEb"));HOOK(address, onInputEvent, &orig_onInputEvent);dlclose_ex(input); //Sfg2 Hook Bypass
+
+
+    hexPatches.FreezeAmmo = MemoryPatch::createWithHex("libil2cpp.so",0x11FD290,"1EFF2FE1");
+	hexPatches.GetAmmo = MemoryPatch::createWithHex("libil2cpp.so",0xFE3F54,"00000CE3790444E31EFF2FE1");
+	hexPatches.GetRefileAmmo = MemoryPatch::createWithHex("libil2cpp.so",0xFF6AD4,"000F44E31EFF2FE1");
+    hexPatches.BenzineFull = MemoryPatch::createWithHex("libil2cpp.so",0x1008a48,"00000CE3790444E31EFF2FE1");
+    hexPatches.GetMoney = MemoryPatch::createWithHex("libil2cpp.so",0xFF577C,"0201E0E31EFF2FE1");
+    hexPatches.NoEffectGrenade = MemoryPatch::createWithHex("libil2cpp.so",0x13F49F4,"1EFF2FE1");
+	hexPatches.NoAnimationFree = MemoryPatch::createWithHex("libil2cpp.so",0x11FEE18,"1EFF2FE1");
+	hexPatches.NoAnimationFree2 = MemoryPatch::createWithHex("libil2cpp.so",0x11FEEA4,"1EFF2FE1");
+	hexPatches.NoRecoil = MemoryPatch::createWithHex("libil2cpp.so",0x100380c,"1EFF2FE1");
+	hexPatches.SpeedReoladWeapon = MemoryPatch::createWithHex("libil2cpp.so",0x11FEA98,"1EFF2FE1");
+	hexPatches.SpeedReoladWeapon2 = MemoryPatch::createWithHex("libil2cpp.so",0x11FEC24,"1EFF2FE1");
+	hexPatches.UnilockAll = MemoryPatch::createWithHex("libil2cpp.so",0xFF72E4,"E70300E31EFF2FE1");
+	hexPatches.GetArmor = MemoryPatch::createWithHex("libil2cpp.so",0x10088bc,"00000CE3790444E31EFF2FE1");
+	hexPatches.UnilockAllWeapon = MemoryPatch::createWithHex("libil2cpp.so",0xfe3f54,"E70300E31EFF2FE1");
+	hexPatches.ChostHack = MemoryPatch::createWithHex("libil2cpp.so",0x10a1fa8,"00 00 A0 E3 FF FF FF FF");
+	hexPatches.FreezeBot = MemoryPatch::createWithHex("libil2cpp.so",0x1061674,"00 00 A0 E3 FF FF FF FF");
+	hexPatches.WallHack = MemoryPatch::createWithHex("libil2cpp.so",0x12ae5c0,"00 00 16 43");
+	hexPatches.WallHack2 = MemoryPatch::createWithHex("libil2cpp.so",0x12ae780,"00 00 16 43");
+	hexPatches.GetCS4 = MemoryPatch::createWithHex("libil2cpp.so",0x1008940,"FF 0F 47 E3 FF FF FF FF");
+
+
+
+    SetColorr = (void (*)(void*, float, float, float, float))getAbsoluteAddress("libil2cpp.so", 0x12D2514);
+    isRainbowCar = (void (*)(void*, int)) getAbsoluteAddress("libil2cpp.so", 0x12CD1AC);               
+	sFuel = (void(*)(void *,float))getAbsoluteAddress("libil2cpp.so", 0x12D36DC);
+	MSHookFunction((void*)getAbsoluteAddress("libil2cpp.so", 0x12D1AA4),(void*)Update,(void**)&_Update);	
+	
+	
+	
+	AddArmor = (void(*)(void *,float))getAbsoluteAddress("libil2cpp.so", 0x10A1F68);
+	DeadPlayer = (void(*)(void *,float))getAbsoluteAddress("libil2cpp.so", 0x10A1FA8);
+	AddHealth = (void(*)(void *,float))getAbsoluteAddress("libil2cpp.so", 0x10A1D34);
+    MSHookFunction((void*)getAbsoluteAddress("libil2cpp.so", 0x109FEB8),(void*)FixUpdate,(void**)&old_FixUpdate);
+
+    MSHookFunction((void*)getAbsoluteAddress("libil2cpp.so", 0x11FD334),(void*)SetClip,(void**)&old_GetClip);
+
+    MSHookFunction((void*)getAbsoluteAddress("libil2cpp.so", 0x1396730),(void*)SetGrenade,(void**)&old_ThrowGrenade);
+
+	
+	
+	
+    return NULL;
+}
+JNIEXPORT void JNICALL
+Java_com_Yahdikallah_ImGui_GLES3JNIView_step(JNIEnv* env, jobject obj) {
+    if (g_Initialized) {
+    ImGuiIO& io = ImGui::GetIO();
+    
+    //Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui::NewFrame();
+    
+    BeginDraw();
+    RenderNotifications();
+
+
+    ImGui::EndFrame();
+    
+    ImGui::Render();
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+}
+
+JNIEXPORT void JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_imgui_Shutdown(JNIEnv* env, jobject obj){
+    if (!g_Initialized)
+        return;
+     // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplAndroid_Shutdown();
+    ImGui::DestroyContext();
+    g_Initialized=false;
+}
+
+JNIEXPORT void JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_MotionEventClick(JNIEnv* env, jobject obj,jboolean down,jfloat PosX,jfloat PosY){
+    if (g_Initialized) {
+    ImGuiIO & io = ImGui::GetIO();
+    io.MouseDown[0] = down;
+    io.MousePos = ImVec2(PosX,PosY);
+    }
+}
+
+JNIEXPORT jstring JNICALL Java_com_Yahdikallah_ImGui_GLES3JNIView_getWindowRect(JNIEnv *env, jobject thiz) {
+    //get drawing window
+    // TODO: accomplish getWindowSizePos()
+    if (g_Initialized) {
+    char result[512]="0|0|0|0";
+    if(g_window){
+        sprintf(result,"%d|%d|%d|%d",(int)g_window->Pos.x,(int)g_window->Pos.y,(int)g_window->Size.x,(int)g_window->Size.y);
+    }
+    return env->NewStringUTF(result);
+    }
+}
+
+JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM *vm, void *reserved) {
+    JNIEnv *globalEnv;
+    vm->GetEnv((void **) &globalEnv, JNI_VERSION_1_6);
+
+   pthread_t gameThread = NULL;
+    if (gameThread = pthread_self()) {
+        pthread_create(&gameThread, NULL, hack_thread, NULL);
+    }
+    
+    return JNI_VERSION_1_6;
+}
+
+JNIEXPORT void JNICALL
+JNI_OnUnload(JavaVM *vm, void *reserved) {}
+
