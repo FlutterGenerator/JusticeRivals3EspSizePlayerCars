@@ -1,8 +1,8 @@
 # JusticeRivals3EspSizePlayerCars
 [![JusticeRivals3EspSizePlayerCars Build](https://github.com/FlutterGenerator/JusticeRivals3EspSizePlayerCars/actions/workflows/build-apk.yml/badge.svg)](https://github.com/FlutterGenerator/JusticeRivals3EspSizePlayerCars/actions/workflows/build-apk.yml)
 
-# Justice Rivals 3 Version: (198) – 1.200f8
-**Google Play Release Date:** 17 December 2025
+# Justice Rivals 3 Version: (134) – 1.097h
+**Google Play Release Date:** 20 March 2025
 
 ![](img.jpg)
 
