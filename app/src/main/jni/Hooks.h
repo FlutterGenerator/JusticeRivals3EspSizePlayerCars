@@ -2,32 +2,32 @@
 // public class Component -> public Transform get_transform() { }
 void *getTransform(void *player) {
     if (!player) return NULL;
-    static const auto get_transform_injected = reinterpret_cast<uint64_t(__fastcall *)(void *)>(getAbsoluteAddress("libil2cpp.so", 0x30DA4B8));
+    static const auto get_transform_injected = reinterpret_cast<uint64_t(__fastcall *)(void *)>(getAbsoluteAddress("libil2cpp.so", 0x8F10F8));
     return (void *) get_transform_injected(player);
 }
 
-// public class Transform -> private static void get_position_Injected(IntPtr _unity_self, out Vector3 ret) { }
+// public class Transform -> private void get_position_Injected(out Vector3 ret) { }
 Vector3 get_position(void *transform) {
     if (!transform)return Vector3();
     Vector3 position;
-    static const auto get_position_injected = reinterpret_cast<uint64_t(__fastcall *)(void *,Vector3 &)>(getAbsoluteAddress("libil2cpp.so", 0x30F08E0));
+    static const auto get_position_injected = reinterpret_cast<uint64_t(__fastcall *)(void *,Vector3 &)>(getAbsoluteAddress("libil2cpp.so", 0xB26F3C));
     get_position_injected(transform, position);
     return position;
 }
 
-// public sealed class Camera -> private static void WorldToScreenPoint_Injected(IntPtr _unity_self, in Vector3 position, Camera.MonoOrStereoscopicEye eye, out Vector3 ret) { }
+// public sealed class Camera -> private void WorldToScreenPoint_Injected(ref Vector3 position, Camera.MonoOrStereoscopicEye eye, out Vector3 ret) { }
 
 Vector3 WorldToScreenPoint(void *transform, Vector3 test) {
     if (!transform)return Vector3();
     Vector3 position;
-    static const auto WorldToScreenPoint_Injected = reinterpret_cast<uint64_t(__fastcall *)(void *,Vector3, int, Vector3 &)>(getAbsoluteAddress("libil2cpp.so", 0x30748B8));
+    static const auto WorldToScreenPoint_Injected = reinterpret_cast<uint64_t(__fastcall *)(void *,Vector3, int, Vector3 &)>(getAbsoluteAddress("libil2cpp.so", 0x8EDB40));
     WorldToScreenPoint_Injected(transform, test, 4, position);
     return position;
 }
 
 //public sealed class Camera -> public static Camera get_main() { }
 void *get_camera() {
-    static const auto get_camera_injected = reinterpret_cast<uint64_t(__fastcall *)()>(getAbsoluteAddress("libil2cpp.so", 0x3074DE0));
+    static const auto get_camera_injected = reinterpret_cast<uint64_t(__fastcall *)()>(getAbsoluteAddress("libil2cpp.so", 0x8EE020));
     return (void *) get_camera_injected();
 }
 
