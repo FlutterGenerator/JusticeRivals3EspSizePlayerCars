@@ -339,13 +339,13 @@ void *hack_thread(void *) {
 #else 
  
 //  public class VehicleInfo -> private void FixedUpdate() { }
-  MSHookFunction((void *)getAbsoluteAddress("libil2cpp.so", 0x1234567), (void *) CarUpdate, (void **) &old_CarUpdate);
+  MSHookFunction((void *)getAbsoluteAddress("libil2cpp.so", 0x14D0F48), (void *) CarUpdate, (void **) &old_CarUpdate);
  
   // public class AICharacterFixedUpdate -> private void FixedUpdate() { }
-  MSHookFunction((void *)getAbsoluteAddress("libil2cpp.so", 0x1234567), (void *) espUpdate, (void **) &old_espUpdate);
+  MSHookFunction((void *)getAbsoluteAddress("libil2cpp.so", 0xC4D62C), (void *) espUpdate, (void **) &old_espUpdate);
  
- // public class Transform -> private void set_localScale_Injected(ref Vector3 value) { }
-  SetLocalScale = (void (*)(void*, Vector3))getAbsoluteAddress(targetLibName, 0x1234567);
+ // public class Transform -> private static void set_localScale_Injected(IntPtr _unity_self, in Vector3 value) { }
+  SetLocalScale = (void (*)(void*, Vector3))getAbsoluteAddress(targetLibName, 0x30F1D04);
      
     
 
