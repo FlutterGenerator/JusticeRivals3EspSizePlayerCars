@@ -103,9 +103,8 @@ void Draw3dBox(PoisonModzEsp esp,Color espColor, Vector3 Transform,void * camera
     Vector3 position15 = add(add(Transform, Vector3(0.6, 0, 0)), Vector3(0, 0, -0.6));
     Vector3 position16 = add(add(Transform, Vector3(-0.5, 0, 0)), Vector3(0, 0, -0.6)); 
     Vector3 position17 = add(add(Transform, Vector3(-0.5, 1.6, 0)), Vector3(0, 0, -0.6));
-
-	
-	
+    
+    
     Vector3 vector = WorldToScreenPoint(camera, position2);
     Vector3 vector2 = WorldToScreenPoint(camera, position3);
     Vector3 vector3 = WorldToScreenPoint(camera, position4);
@@ -122,8 +121,8 @@ void Draw3dBox(PoisonModzEsp esp,Color espColor, Vector3 Transform,void * camera
     Vector3 vector14 = WorldToScreenPoint(camera, position15);
     Vector3 vector15 = WorldToScreenPoint(camera, position16);
     Vector3 vector16 = WorldToScreenPoint(camera, position17);
-
-	
+    
+    
 	
     if (vector.z > 0 && vector2.z > 0 && vector3.z > 0 && vector4.z > 0 && vector5.z > 0 && vector6.z > 0 && vector7.z > 0  && vector8.z > 0  && vector9.z > 0  && vector10.z > 0  && vector11.z > 0  && vector12.z > 0  && vector13.z > 0  && vector14.z > 0  && vector15.z > 0 && vector16.z > 0 )
     {
@@ -230,9 +229,7 @@ if(ESP) {
                 std::string distances;
                 distances = float_to_string(distance / 100);
                 esp.DrawText(color,  ("(" +distances+ ")").c_str(), Vector2((screenWidth - (screenWidth - BoxPosNew.x)), (screenHeight - BoxPosNew.y - 10.0f)), playerTextSize);
-            }               
-    
-      
+            }
             
             if(ESPCrossHair) {
                esp.DrawCrosshair( Color::Red(), Vector2(screenWidth / 2, screenHeight/2), CrossSize);
@@ -252,7 +249,6 @@ if(ESP) {
 }
 }
 
-
 extern "C"
 JNIEXPORT void JNICALL
 Java_JusticeRivals3_ModMenuBY_Ehromtj_MenuV5_DrawOn(JNIEnv *env, jclass type, jobject espView, jobject canvas) {
@@ -261,7 +257,6 @@ Java_JusticeRivals3_ModMenuBY_Ehromtj_MenuV5_DrawOn(JNIEnv *env, jclass type, jo
         DrawESP(es, es.getWidth(), es.getHeight());
     }
 }
-
 
 bool (*IsLocal)(void* player);
 void (*set_rotation)(void *player, Quaternion rotation);
@@ -313,11 +308,6 @@ void espUpdate(void *player) {
     }
 }
 
-
-
-
-
-
 #define targetLibName OBFUSCATE("libil2cpp.so")
 void *hack_thread(void *) {
     ProcMap il2cppMap;
@@ -339,17 +329,15 @@ void *hack_thread(void *) {
 #else 
  
 //  public class VehicleInfo -> private void FixedUpdate() { }
-  MSHookFunction((void *)getAbsoluteAddress("libil2cpp.so", 0x12D1AA4), (void *) CarUpdate, (void **) &old_CarUpdate);
+  MSHookFunction((void *)getAbsoluteAddress("libil2cpp.so", 0x14D0F48), (void *) CarUpdate, (void **) &old_CarUpdate);
  
   // public class AICharacterFixedUpdate -> private void FixedUpdate() { }
-  MSHookFunction((void *)getAbsoluteAddress("libil2cpp.so", 0x14AB350), (void *) espUpdate, (void **) &old_espUpdate);
+  MSHookFunction((void *)getAbsoluteAddress("libil2cpp.so", 0xC4D62C), (void *) espUpdate, (void **) &old_espUpdate);
  
- // public class Transform -> private void set_localScale_Injected(ref Vector3 value) { }
-  SetLocalScale = (void (*)(void*, Vector3))getAbsoluteAddress(targetLibName, 0xB281F0);
-     
-    
-
-	
+ // public class Transform -> private static void set_localScale_Injected(IntPtr _unity_self, in Vector3 value) { }
+  SetLocalScale = (void (*)(void*, Vector3))getAbsoluteAddress(targetLibName, 0x30F1D04);
+  
+  
     LOGI(OBFUSCATE("Done"));
 #endif
 
@@ -364,7 +352,6 @@ Java_JusticeRivals3_ModMenuBY_Ehromtj_MenuV5_getFeatureList(JNIEnv *env, jobject
     MakeToast(env, context, OBFUSCATE("MENU MADE BY EHROM TJ"), Toast::LENGTH_LONG);
 
     const char *features[] = {
-    
 
             OBFUSCATE("Collapse_Esp Menu"),
             OBFUSCATE("0_CollapseAdd_Toggle_Enable ESP Player"), 
@@ -397,8 +384,6 @@ Java_JusticeRivals3_ModMenuBY_Ehromtj_MenuV5_getFeatureList(JNIEnv *env, jobject
 			OBFUSCATE("18_CollapseAdd_SeekBar_Color Green_0_255"), //18 Case  
 			OBFUSCATE("19_CollapseAdd_SeekBar_Color Blue_0_255"), //19 Case
 			OBFUSCATE("159_CollapseAdd_SeekBar_Map Ui Size_0_100"),
-            
-			
 			
 			
             };
@@ -623,67 +608,61 @@ Java_JusticeRivals3_ModMenuBY_Ehromtj_Preferences_Changes(JNIEnv *env, jclass cl
                     break;
 				case 19:
                     setShader("_MainTex2_ST");
-                    break;	
-					
-					
-                          
+                    break;
+                    
+                    
             }
-            break;  
-			
-	
+            break;
 
 // BYPASS ☠️
 
 	case 999999999:
-PATCH_SWITCH("0x131E1D4","1EFF2FE1",boolean);//SendAdminUnbanPlayer
-PATCH_SWITCH("0x131DF48","1EFF2FE1",boolean);//SendAdminBanCommand
-PATCH_SWITCH("0x107B238","1EFF2FE1",boolean);//UnbanConfirm
-PATCH_SWITCH("0x107B134","1EFF2FE1",boolean);//RemoveBannedPlayer
-PATCH_SWITCH("0x107AE88","1EFF2FE1",boolean);//BanConfirm() { }
-PATCH_SWITCH("0x107B910","1EFF2FE1",boolean);//DeleteVehicleConfirm() { }
-PATCH_SWITCH("0x109E164","1EFF2FE1",boolean);//CanViewBannerAd
-PATCH_SWITCH("0x10F9284","1EFF2FE1",boolean);//DestroyBannerAd() { }
-PATCH_SWITCH("0x10F92FC","1EFF2FE1",boolean);//HideBannerAd
-PATCH_SWITCH("0xF292A8","1EFF2FE1",boolean);//DestroyBannerView() { }
-PATCH_SWITCH("0xF2920C","1EFF2FE1",boolean);//HideBannerView() { }
-PATCH_SWITCH("0xF29060","1EFF2FE1",boolean);//LoadAd(AdRequest request) { }
-PATCH_SWITCH("0xF2848C","1EFF2FE1",boolean);//CreateBannerView(string adUnitId, AdSize adSize, AdPosition position) { }
-PATCH_SWITCH("0xF28E00","1EFF2FE1",boolean);//CreateBannerView(string adUnitId, AdSize adSize, int x, int y) { }
-PATCH_SWITCH("0x91E7AC","1EFF2FE1",boolean);//DeleteFile(char* path, out MonoIOError error) { }
-PATCH_SWITCH("0x91E7B0","1EFF2FE1",boolean);//DeleteFile(string path, out MonoIOError error) { }
-PATCH_SWITCH("0xD88FF0","1EFF2FE1",boolean);//IsDeletedMember(int index) { }
-PATCH_SWITCH("0xD88C60","1EFF2FE1",boolean);//TryDeleteValue(object indexClass, int index, string name, bool ignoreCase, object deleteValue) { }
-PATCH_SWITCH("0x5B85FC","1EFF2FE1",boolean);//DeleteKey(string key) { }
-PATCH_SWITCH("0xBCB93C","1EFF2FE1",boolean);//CascadeDelete(DataRow row) { }
-PATCH_SWITCH("0xC40F24","1EFF2FE1",boolean);//DeleteRecord(int recordIndex) { }
-PATCH_SWITCH("0xC415BC","1EFF2FE1",boolean);//DeleteRecord(int recordIndex, bool fireEvent) { }
-PATCH_SWITCH("0xF65B68","1EFF2FE1",boolean);//DeleteLineBack() { }
-PATCH_SWITCH("0xF65EB0","1EFF2FE1",boolean);//DeleteWordBack() { }
-PATCH_SWITCH("0xF66054","1EFF2FE1",boolean);//DeleteWordForward() { }
-PATCH_SWITCH("0xF66370","1EFF2FE1",boolean);//Delete() { }
-PATCH_SWITCH("0xF65C8C","1EFF2FE1",boolean);//DeleteSelection() { }
-PATCH_SWITCH("0x10561E8","1EFF2FE1",boolean);//DeleteCharacter() { }
-PATCH_SWITCH("0x106F1E8","1EFF2FE1",boolean);//DeleteFromMemory(AICharacter OCIAMHINOON) { }
-PATCH_SWITCH("0x10D0FC8","1EFF2FE1",boolean);//DeletePlayerCharacter() { }
-PATCH_SWITCH("0x139FA68","1EFF2FE1",boolean);//DeletePlayerCharacters() { }
-PATCH_SWITCH("0xFFA3B0","1EFF2FE1",boolean);//DeletePlayerAccount() { }
-PATCH_SWITCH("0x107B910","1EFF2FE1",boolean);//DeleteVehicleConfirm() { }
-PATCH_SWITCH("0x131E3C4","1EFF2FE1",boolean);//SendAdminDeleteVehicle(int DCDOKLPBNEC) { }
-PATCH_SWITCH("0x10D0520","1EFF2FE1",boolean);//DeletePose() { }
-PATCH_SWITCH("0x14CBC74","1EFF2FE1",boolean);//ShowAccountDeleteConfirmDialog() { }
-PATCH_SWITCH("0x14CBD18","1EFF2FE1",boolean);//CancelAccountDelete() { }
-PATCH_SWITCH("0x14CBDBC","1EFF2FE1",boolean);//ConfirmAccountDelete() { }
-PATCH_SWITCH("0x1CEF948","1EFF2FE1",boolean);//ForceCheck() { }
-PATCH_SWITCH("0x1CEF988","1EFF2FE1",boolean);//IsReadyForForceCheck() { }
-PATCH_SWITCH("0x106DAFC","1EFF2FE1",boolean);//ForceStreamOutAllActors() { }
-PATCH_SWITCH("0xFEDDBC","1EFF2FE1",boolean);//ForceMultiplayerLogout() { }
-PATCH_SWITCH("0x1CE07F4","1EFF2FE1",boolean);//ForceStop() { }
+PATCH_SWITCH("0x13841B0","1EFF2FE1",boolean);//SendAdminUnbanPlayer
+PATCH_SWITCH("0x138408C","1EFF2FE1",boolean);//SendAdminBanCommand
+PATCH_SWITCH("0x1339C5C","1EFF2FE1",boolean);//UnbanConfirm
+PATCH_SWITCH("0x1339B5C","1EFF2FE1",boolean);//RemoveBannedPlayer
+PATCH_SWITCH("0x133989C","1EFF2FE1",boolean);//BanConfirm() { }
+PATCH_SWITCH("0x133B990","1EFF2FE1",boolean);//DeleteVehicleConfirm() { }
+PATCH_SWITCH("0x1199588","1EFF2FE1",boolean);//CanViewBannerAd
+PATCH_SWITCH("0xC3E368","1EFF2FE1",boolean);//DestroyBannerAd() { }
+PATCH_SWITCH("0xC3E8D8","1EFF2FE1",boolean);//HideBannerAd
+PATCH_SWITCH("0x25AACB4","1EFF2FE1",boolean);//DestroyBannerView() { }
+PATCH_SWITCH("0x25AAC1C","1EFF2FE1",boolean);//HideBannerView() { }
+PATCH_SWITCH("0x25A3F70","1EFF2FE1",boolean);//LoadAd(AdRequest request) { }
+PATCH_SWITCH("0x25AA680","1EFF2FE1",boolean);//CreateBannerView(string adUnitId, AdSize adSize, AdPosition position) { }
+PATCH_SWITCH("0x25AA84C","1EFF2FE1",boolean);//CreateBannerView(string adUnitId, AdSize adSize, int x, int y) { }
+// PATCH_SWITCH("0x91E7AC","1EFF2FE1",boolean);//DeleteFile(char* path, out MonoIOError error) { }
+// PATCH_SWITCH("0x91E7B0","1EFF2FE1",boolean);//DeleteFile(string path, out MonoIOError error) { }
+PATCH_SWITCH("0x29897F0","1EFF2FE1",boolean);//IsDeletedMember(int index) { }
+PATCH_SWITCH("0x2985758","1EFF2FE1",boolean);//TryDeleteValue(object indexClass, int index, string name, bool ignoreCase, object deleteValue) { }
+PATCH_SWITCH("0xC19610","1EFF2FE1",boolean);//DeleteKey(string key) { }
+PATCH_SWITCH("0x2A24B74","1EFF2FE1",boolean);//CascadeDelete(DataRow row) { }
+PATCH_SWITCH("0x2A2FBE0","1EFF2FE1",boolean);//DeleteRecord(int recordIndex) { }
+PATCH_SWITCH("0x2A3021C","1EFF2FE1",boolean);//DeleteRecord(int recordIndex, bool fireEvent) { }
+PATCH_SWITCH("0x313CA0C","1EFF2FE1",boolean);//DeleteLineBack() { }
+PATCH_SWITCH("0x313C8FC","1EFF2FE1",boolean);//DeleteWordBack() { }
+PATCH_SWITCH("0x313CBD0","1EFF2FE1",boolean);//DeleteWordForward() { }
+PATCH_SWITCH("0x313C2D8","1EFF2FE1",boolean);//Delete() { }
+PATCH_SWITCH("0x313CD8C","1EFF2FE1",boolean);//DeleteSelection() { }
+PATCH_SWITCH("0xF1EF40","1EFF2FE1",boolean);//DeleteCharacter() { }
+PATCH_SWITCH("0x1085514","1EFF2FE1",boolean);//DeleteFromMemory(AICharacter OCIAMHINOON) { }
+PATCH_SWITCH("0x10876C4","1EFF2FE1",boolean);//DeletePlayerCharacter() { }
+PATCH_SWITCH("0x1088CBC","1EFF2FE1",boolean);//DeletePlayerCharacters() { }
+PATCH_SWITCH("0x11B6A0C","1EFF2FE1",boolean);//DeletePlayerAccount() { }
+PATCH_SWITCH("0x133B990","1EFF2FE1",boolean);//DeleteVehicleConfirm() { }
+PATCH_SWITCH("0x1384398","1EFF2FE1",boolean);//SendAdminDeleteVehicle(int DCDOKLPBNEC) { }
+PATCH_SWITCH("0x147662C","1EFF2FE1",boolean);//DeletePose() { }
+PATCH_SWITCH("0x1495EC8","1EFF2FE1",boolean);//ShowAccountDeleteConfirmDialog() { }
+PATCH_SWITCH("0x1495F68","1EFF2FE1",boolean);//CancelAccountDelete() { }
+PATCH_SWITCH("0x1496008","1EFF2FE1",boolean);//ConfirmAccountDelete() { }
+PATCH_SWITCH("0xC2F940","1EFF2FE1",boolean);//ForceCheck() { }
+PATCH_SWITCH("0xC2F978","1EFF2FE1",boolean);//IsReadyForForceCheck() { }
+PATCH_SWITCH("0x1083B80","1EFF2FE1",boolean);//ForceStreamOutAllActors() { }
+PATCH_SWITCH("0x11ABC34","1EFF2FE1",boolean);//ForceMultiplayerLogout() { }
+PATCH_SWITCH("0x14B3658","1EFF2FE1",boolean);//ForceStop() { }
 break;
-	
-	
-	
-	
-	
+
+
     }
 }
 }
