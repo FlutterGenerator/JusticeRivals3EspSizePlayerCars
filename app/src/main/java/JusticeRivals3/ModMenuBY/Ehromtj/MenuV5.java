@@ -83,6 +83,14 @@ import android.content.ClipData;
 import android.icu.text.NumberFormat;
 import android.graphics.drawable.RippleDrawable;
 
+import JusticeRivals3.ModMenuBY.animation.AnimationSetupCallback;
+import JusticeRivals3.ModMenuBY.animation.Titanic;
+import JusticeRivals3.ModMenuBY.animation.TitanicButton;
+import JusticeRivals3.ModMenuBY.animation.TitanicTextView;
+import JusticeRivals3.ModMenuBY.animation.Shimmer;
+import JusticeRivals3.ModMenuBY.animation.ShimmerButton;
+import JusticeRivals3.ModMenuBY.animation.ShimmerTextView;
+
 public class MenuV5 extends Service {
   // ********** Here you can easly change the menu appearance **********//
   public static final String TAG = "Mod_Menu"; // Tag for logcat
